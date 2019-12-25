@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Авторизация</title>
+</head>
+<body class="auth">
+  <h1>Авторизация</h1>
+  {{#if error}}
+    <b>Неправильный логин или пароль</b>
+  {{/if}}
+  <div class="auth__form">
+    <div>
+      <label class="auth__label" for="auth__login">Логин</label>
+      <input class="auth__input auth-login" id="auth__login" type="text" placeholder="Логин">
+    </div>
+    <div>
+      <label class="auth__label" for="auth__email">Пароль</label>
+      <input class="auth__input auth-password" id="auth__password" type="password" placeholder="Пароль">
+    </div>
+    <div>
+      <input class="auth__submit auth-submit" type="submit" value="Войти">
+    </div>
+  </div>
+  <a href="/registration">Регистрация</a>
+
+  <script src="js/auth.js"></script>
+</body>
+</html>

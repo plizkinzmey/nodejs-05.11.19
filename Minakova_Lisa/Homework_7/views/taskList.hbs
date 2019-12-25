@@ -1,0 +1,90 @@
+<style>
+    .container {
+        margin-left: 30px;
+        width: 1000px;
+    }
+
+    ul {
+        width: 500px;
+    }
+
+
+    li {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid rgb(192, 191, 191);
+        margin: 10px 0 10px 0;
+    }
+
+    li:last-child {
+
+        border-bottom: none;
+    }
+
+    button {
+        margin: 0 2px 0 2px;
+    }
+
+    .button-list {
+        display: flex;
+        margin-right: 0;
+    }
+</style>
+
+
+
+<div class="container">
+    <a href="/logout">Выход</a>
+
+    <form method="POST" action="/tasks/addTask" id="tasks">
+        <input type="text" name="title" placeholder="Введите новую задачу" required />
+        <input type="submit" value="Добавить" />
+        <h2>Список дел: </h2>
+
+    </form>
+
+    <ul>
+        {{#each list}}
+        <li>
+            <a href="/tasks/{{this._id}}">{{this.title}}</a><br />
+            <div class="button-list">
+                <form action="/tasks/delete" method="POST">
+                    <button>Удалить</button>
+                    <input type="hidden" name="id" value="{{this._id}}">
+
+                </form>
+                </form>
+                <form action="/tasks/completed" method="POST">
+                    <button>Выполнено</button>
+                    <input type="hidden" name="id" value="{{this._id}}">
+                </form>
+
+            </div>
+
+        </li>
+        {{/each}}
+
+    </ul>
+
+    <h2>Выполненные задачи:</h2>
+    <ul>
+        {{#each completedList}}
+        <li>
+            {{this.title }}
+            <div class="button-list">
+                <form action="/tasks/delete" method="POST">
+                    <button>Удалить</button>
+                    <input type="hidden" name="id" value="{{this._id}}">
+
+                </form>
+                <form action="tasks/completed" method="POST">
+                    <button>Не выполнена</button>
+                    <input type="hidden" name="id" value="{{this._id}}">
+                </form>
+            </div>
+
+        </li>
+        {{/each}}
+    </ul>
+
+</div>

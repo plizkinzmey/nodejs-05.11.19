@@ -4,8 +4,7 @@ const consolidate = require('consolidate');
 const path = require('path');
 const mongoose = require('mongoose');
 const handlebars = require('handlebars');
-const session = require('express-session');
-const MongoStore = require('connect-mongo')(session);
+const cors = require('cors');
 
 /** порт нашего приложения */
 const PORT = 3000;
@@ -21,23 +20,16 @@ const User = require('./models/User');
 const app = express();
 
 app.engine( 'hbs', consolidate.handlebars );
-
+app.use( cors() );
 app.use( express.json() );
 app.use( express.urlencoded( { extended: false } ) );
 app.use( express.static( `${ __dirname }/views` ) );
 
 app.set( 'view engine', 'hbs' );
 app.set( 'views', path.resolve( __dirname, 'views') );
-
-app.use( session({
-    resave: true,
-    saveUninitialized: false,
-    secret: 'this is secret session key',
-    store: new MongoStore({ mongooseConnection: mongoose.connection })
-}));
+app.use( '/tasks', passport.checkAuthentication );
 
 app.use( passport.initialize );
-app.use( passport.session );
 app.use('/tasks', passport.mustBeAuthenticated );
 
 /**
@@ -69,14 +61,21 @@ const userPaths = [
 handlebars.registerHelper('navpanel', ( user ) => {
     const currentNavRoutes = ( user ? userPaths : guetsPaths );
     const links = currentNavRoutes.map( ({ url, title }) => `<a href="${ url }">${ title }</a>&nbsp;`);
-    return new handlebars.SafeString(  links.join('') );
+    return new handlebars.SafeString( links.join('') );
 });
+
+app.use('/tasks', passport.checkAuthentication );
 
 /** Получаем список всех задач */
 app.get('/tasks', async ( req, res ) => {
-    const { _id } = req.user;
-    const tasks = await Task.find({ user: _id });
-    res.render( 'index', { tasks, user: req.user });
+    const { user } = req;
+    if ( user ) {
+        const { _id } = user;
+        const tasks = await Task.find({ user: _id });
+        res.status( 200 ).render( 'index', { tasks, user: req.user });
+    } else {
+        res.status( 404 ).send();
+    }
 });
 
 /** создание новой задачи  */
@@ -86,6 +85,9 @@ app.post('/tasks', async ( req, res ) => {
     await task.validate( async (errors) => {
         if ( !errors ) {
             await task.save();
+            res.status( 200 ).send();
+        } else {
+            res.status( 400 ).send();
         }
     });
     res.redirect( '/tasks' );
@@ -96,22 +98,23 @@ app.delete('/tasks', async ( req, res ) => {
     try {
         const { body: { id } } = req;
         await Task.findByIdAndDelete(id);
-        res.send( true );
+        res.status( 203 ).send();
     } catch( e ) {
-        res.send( false );
+        res.status( 403 ).send();
     }
 });
 
 /** Переключение статуса задачи */
-app.put('/tasks', async ( req, res ) => {
+app.put('/tasks/:id', async ( req, res ) => {
+    const { params: { id } } = req;
     try {
-        const { body: { id } } = req;
-        const task = await Task.findById(id );
+        const task = await Task.findById( id );
+
         task.set({ completed: !task.completed });
         task.save();
-        res.send( task.completed );
+        res.status( 200 ).send( task.completed );
     } catch( e ) {
-        res.send( false );
+        res.status( 304 ).send();
     }
 });
 
@@ -119,7 +122,7 @@ app.put('/tasks', async ( req, res ) => {
 app.get('/tasks/update/:id', async ( req, res ) => {
     const { params: { id } } = req;
     const task = await Task.findById( id );
-    res.render( 'update', { task, user: req.user });
+    res.status( 200 ).render( 'update', { task, user: req.user });
 });
 
 /** сохранение изменений */
@@ -134,6 +137,9 @@ app.post('/tasks/update/:id', async ( req, res ) => {
     await task.validate( async (errors) => {
         if ( !errors ) {
             await task.save();
+            res.status( 200 ).send();
+        } else {
+            res.status( 304 ).send();
         }
     });
 
@@ -142,19 +148,19 @@ app.post('/tasks/update/:id', async ( req, res ) => {
 
 app.get('/login', (req, res) => {
     const { query: { error } } = req;
-    res.render( 'auth/login', { error, user: req.user } );
+    res.status( 200 ).render( 'auth/login', { error, user: req.user } );
 });
 
 app.post( '/login', passport.authenticate );
 
 app.get('/logout', (req, res) => {
     req.logout();
-    res.redirect('/login');
+    res.status( 302 ).redirect('/login');
 });
 
 /** подключаем страницу регистрации */
 app.get('/register', ( req, res ) => {
-    res.render('auth/register', { user: req.user });
+    res.status( 200 ).render('auth/register', { user: req.user });
 });
 
 /** подключаем страницу регистрации */
@@ -168,9 +174,13 @@ app.post('/register', async ( req, res ) => {
     } 
 
     if ( !errors ) {
-      await user.save();
-      return res.redirect('/login');
-    } 
+       await user.save();
+       res.status( 201 )
+       return res.redirect('/login');
+    } else {
+        res.status( 400 )
+    }
+
     res.redirect( '/register' );
 });
 

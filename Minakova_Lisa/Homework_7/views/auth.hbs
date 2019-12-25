@@ -1,0 +1,9 @@
+{{#if error}}
+<b>Неправльный логин или пароль</b>
+{{/if}}
+
+<form method="POST" action="/auth">
+  <input type="text" name="email" placeholder="Email" /><br/>
+  <input type="password" name="password" placeholder="Пароль" /><br/>
+  <input type="submit" value="Войти" /> 
+</form>

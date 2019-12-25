@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Регистрация</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body class="registration">
+  <h1>Регистрация</h1>
+  <div class="registration__form">
+    <div>
+      <label class="registration__label" for="registration__login">Логин</label>
+      <input class="registration__input registration-login" id="registration__login" type="text" placeholder="Логин">
+    </div>
+    <div>
+      <label class="registration__label" for="registration__email">Email</label>
+      <input class="registration__input registration-email" id="registration__email" type="text" placeholder="Email">
+    </div>
+    <div>
+      <label class="registration__label" for="registration__email">Пароль</label>
+      <input class="registration__input registration-password" id="registration__password" type="password" placeholder="Пароль">
+    </div>
+    <div>
+      <label class="registration__label" for="registration__password-confirm">Подтверждение пароля</label>
+      <input class="registration__input registration-password-confirm" id="registration__password-confirm" type="password" placeholder="Подтверждение пароля">
+    </div>
+    <div>
+      <input class="registration__submit registration-submit" type="submit" value="Зарегистрироваться">
+    </div>
+  </div>
+  <a href="/auth">Авторизация</a>
+
+  <script src="js/registration.js"></script>
+</body>
+</html>

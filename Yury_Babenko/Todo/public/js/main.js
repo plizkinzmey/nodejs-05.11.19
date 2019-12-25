@@ -50,10 +50,11 @@ async function onClickCompleteTask(e) {
 };
 
 async function addTask(data) {
-  const response = await fetch('/api/task', {
+  const response = await fetch('/tasks', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
     },
     body: JSON.stringify(data),
   });
@@ -63,24 +64,24 @@ async function addTask(data) {
 
 
 async function deleteTask(id) {
-  const response = await fetch('/api/task', {
+  const response = await fetch('/tasks', {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({id}),
   });
-  const deletedTask = await response.json();
-  return deletedTask;
+
+  return response;
 };
 
-async function updateTask(id, data) {
-  const response = await fetch('/api/task', {
+async function updateTask(id, payload) {
+  const response = await fetch(`/tasks/${id}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({id, data}),
+    body: JSON.stringify(payload),
   });
   const updatedTask = await response.json();
   return updatedTask;

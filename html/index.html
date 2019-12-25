@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body>
+  <ul id="list"></ul>
+
+  <input type="button" id="create" value="Создать задачу" />
+  <script>
+    window.addEventListener('load', () => {
+      const $list = document.querySelector('#list');
+      const $create = document.querySelector('#create');
+      const token = localStorage.getItem('token');
+      const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
+
+      if (!token) {
+        window.location = '/auth';
+      }
+
+      const socket = io.connect(`http://localhost:3000?token=${token}`);
+
+      socket.on(`created:${user._id}`, (task) => {
+        const $li = document.createElement('li');
+        const $button = document.createElement('button');
+        $button.textContent = task.completed ? 'Вернуть' : 'Выполнить';
+
+        $li.dataset.id = task._id;
+        $li.textContent = task.title;
+        $li.appendChild($button);
+
+        $list.appendChild($li);
+      });
+
+      socket.on(`toggled:${user._id}`, (taskId) => {
+        const $button = document.querySelector(`[data-id="${taskId}"] > button`);
+
+        $button.textContent = $button.textContent === 'Вернуть' ? 'Выполнить' : 'Вернуть';
+      });
+
+      $list.addEventListener('click', (event) => {
+        if (event.target.tagName === 'BUTTON') {
+          const $li = event.target.parentElement;
+          const id = $li.dataset.id;
+
+          socket.emit('toggle', id);
+        }
+      });
+
+      $create.addEventListener('click', (event) => {
+        socket.emit('create', {
+          title: prompt('Введите название задачи'),
+          completed: false,
+          user: user._id,
+        });
+
+        event.preventDefault();
+      });
+
+      fetch('/tasks', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+        .then((response) => {
+          if (response.status !== 200) {
+            localStorage.removeItem('token');
+            window.location = '/auth';
+
+            return null;
+          }
+
+          return response.json();
+        })
+        .then((tasks) => {
+          tasks.forEach((task) => {
+            const $li = document.createElement('li');
+            const $button = document.createElement('button');
+            $button.textContent = task.completed ? 'Вернуть' : 'Выполнить';
+
+            $li.dataset.id = task._id;
+            $li.textContent = task.title;
+            $li.appendChild($button);
+
+            $list.appendChild($li);
+          });
+        });
+    });
+  </script>
+</body>
+
+</html>

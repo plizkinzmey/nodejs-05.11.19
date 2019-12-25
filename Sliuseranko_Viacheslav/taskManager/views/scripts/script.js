@@ -25,12 +25,9 @@ async function handleDelete(target) {
  **/
 async function handleToggleStatus(target) {
     const { dataset: { id } } = target;
-    const result = await fetch('/tasks', {
+    const result = await fetch(`/tasks/${ id }`, {
          method: 'PUT',
-         headers: {
-             'Content-Type': 'application/json'
-         },
-         body: JSON.stringify({ id })
+         headers: { 'Content-Type': 'application/json' },
      });
 
     if ( result ) {
